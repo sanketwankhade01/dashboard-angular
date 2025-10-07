@@ -1,0 +1,176 @@
+<div class="app-root" [class.dark]="isDarkMode">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" [class.open]="sidebarOpen" [class.collapsed]="sidebarCollapsed">
+    <div class="sidebar-top">
+      <div class="logo-mark" *ngIf="!sidebarCollapsed">
+        <div class="logo-icon">H</div>
+        <div class="logo-text">HelpDesk</div>
+      </div>
+      <div class="brand">
+        <button class="collapse-btn" (click)="toggleCollapse()">
+          <span class="icon" *ngIf="sidebarCollapsed">☰</span>
+          <i class="fas fa-chevron-left" *ngIf="!sidebarCollapsed"></i>
+        </button>
+      </div>
+    </div>
+
+    <nav class="menu">
+      <ul>
+        <li class="menu-item" [class.active]="activeMenu==='dashboard'" (click)="selectMenu('dashboard')">
+          <i class="fas fa-th-large"></i>
+          <span *ngIf="!sidebarCollapsed">Dashboard</span>
+        </li>
+        <li class="menu-item" [class.active]="activeMenu==='user'" (click)="selectMenu('user')">
+          <i class="fas fa-users"></i>
+          <span *ngIf="!sidebarCollapsed">User Management</span>
+        </li>
+        <li class="menu-item" [class.active]="activeMenu==='settings'" (click)="selectMenu('settings')">
+          <i class="fas fa-cog"></i>
+          <span *ngIf="!sidebarCollapsed">Settings</span>
+        </li>
+        <li class="menu-item" [class.active]="activeMenu==='account'" (click)="selectMenu('account')">
+          <i class="fas fa-id-badge"></i>
+          <span *ngIf="!sidebarCollapsed">Account</span>
+        </li>
+        <li class="menu-item" [class.active]="activeMenu==='logout'" (click)="selectMenu('logout')">
+          <i class="fas fa-sign-out-alt"></i>
+          <span *ngIf="!sidebarCollapsed">Logout</span>
+        </li>
+      </ul>
+    </nav>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <div class="main" [class.shifted]="sidebarOpen && !sidebarCollapsed">
+
+    <!-- Topbar Header -->
+    <header class="topbar">
+      <div class="left">
+        <h1 class="title"><i class="fas fa-user-circle"></i> Welcome to Help Desk Dashboard</h1>
+      </div>
+      <div class="right">
+        <tr>
+          <td>
+        <button class="dark-mode-btn" (click)="toggleDarkMode()">
+          <i class="fas" [ngClass]="isDarkMode ? 'fa-sun' : 'fa-moon'"></i>
+          {{ isDarkMode ? 'Light Mode' : 'Dark Mode' }}
+        </button></td>
+        <td>
+        <button class="export-btn" (click)="exportPDF()">
+          <i class="fas fa-file-pdf"></i> Export PDF
+        </button>
+        </td>
+        </tr>
+      </div>
+    </header>
+
+    <!-- Full dashboard container for PDF -->
+    <div class="main-content">
+
+      <!-- SECOND HEADER: Full Width Filters -->
+      <div class="second-header">
+        <div class="filters-header">
+
+          <!-- Always Visible Filters -->
+          <div class="filters-container">
+            <!-- <div class="filter-item">
+              <label for="dateSelect">Filter by Date</label>
+              <select id="dateSelect" [(ngModel)]="selectedDate" (change)="applyFilters()">
+                <option value="">All Dates</option>
+                <option *ngFor="let d of availableDates" [value]="d">{{ d }}</option>
+              </select>
+            </div> -->
+           
+               <div class="filter-item">
+              <label for="startDate">Start Date</label>
+              <input id="startDate" type="date" [(ngModel)]="startDate" (change)="applyFilters()" />
+            </div>
+
+            <div class="filter-item">
+              <label for="endDate">End Date</label>
+              <input id="endDate" type="date" [(ngModel)]="endDate" (change)="applyFilters()" />
+            </div>
+            <!-- Advanced Filters -->
+               <!-- <div class="filter-item">
+              <button class="toggle-btn" (click)="showAdvancedFilters = !showAdvancedFilters">
+                <i class="fas" [ngClass]="showAdvancedFilters ? 'fa-minus' : 'fa-plus'"></i> More Filters
+              </button>
+            </div> -->
+            <div class="filter-item">
+              <label for="productSelect">Filter by Product</label>
+              <select id="productSelect" [(ngModel)]="selectedEmployee" (change)="applyFilters()">
+                <option value="">All Products</option>
+                <option *ngFor="let e of employees" [value]="e.name">{{ e.name }}</option>
+              </select>
+            </div>
+
+            <div class="filter-item">
+              <label for="companySelect">Filter by Company</label>
+              <select id="companySelect" [(ngModel)]="selectedCompany" (change)="applyFilters()">
+                <option value="">All Companies</option>
+                <option *ngFor="let c of companies" [value]="c.name">{{ c.name }}</option>
+              </select>
+            </div>
+
+           
+          </div>
+
+          
+
+        </div>
+      </div>
+
+      <!-- Stats & Charts Section -->
+      <section class="dashboard-panels" id="dashboard-content">
+        <div class="stats-row">
+          <div class="stat" *ngFor="let s of stats"
+               [style.borderColor]="s.color" [style.background]="getLightColor(s.label)">
+            <div class="stat-value">{{ s.value }}</div>
+            <div class="stat-label">{{ s.label }}</div>
+            <div class="progress-bar">
+              <div class="progress" [style.width]="s.graphwidth + '%'" [style.background]="s.color"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="charts-row">
+          <div class="chart-card" *ngFor="let c of charts">
+            {{c | json}}
+            <div class="card-head">{{ c.title }}</div>
+            <div class="card-body">
+              <canvas baseChart
+                      [data]="c.data"
+                      [type]="c.type"
+                      [options]="{ responsive: true, maintainAspectRatio: false }"
+                      height="200">
+              </canvas>
+            </div>
+          </div>
+
+          <div class="chart-card" *ngIf="monthlyTrend">
+            <div class="card-head">Monthly Trend</div>
+            <div class="card-body">
+              <canvas baseChart
+                      [data]="monthlyTrend"
+                      [type]="'line'"
+                      [options]="{ responsive: true, maintainAspectRatio: false }"
+                      height="300">
+              </canvas>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <footer class="footer">
+        <span></span>
+        <small class="version"></small>
+      </footer>
+
+    </div> <!-- end main-content -->
+
+  </div> <!-- end main -->
+</div>   
+
+

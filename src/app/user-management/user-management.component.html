@@ -1,0 +1,111 @@
+<!-- Wrap with same app-root if this is a full page, otherwise include inside parent -->
+<div class="user-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar user-sidebar" [class.open]="sidebarOpen" [class.collapsed]="sidebarCollapsed">
+    <div class="sidebar-top">
+      <div class="logo-mark" *ngIf="!sidebarCollapsed">
+        <div class="logo-icon">H</div>
+        <div class="logo-text">HelpDesk</div>
+      </div>
+
+      <div class="brand">
+        <button class="collapse-btn" (click)="toggleCollapse()">
+          <span class="icon" *ngIf="sidebarCollapsed">☰</span>
+          <i class="fas fa-chevron-left" *ngIf="!sidebarCollapsed"></i>
+        </button>
+      </div>
+    </div>
+
+    <nav class="menu">
+      <ul>
+        <li class="menu-item" [class.active]="activeMenu==='dashboard'" (click)="selectMenu('dashboard')">
+          <i class="fas fa-th-large"></i>
+          <span *ngIf="!sidebarCollapsed">Dashboard</span>
+        </li>
+        <li class="menu-item" [class.active]="activeMenu==='user'" (click)="selectMenu('user')">
+          <i class="fas fa-users"></i>
+          <span *ngIf="!sidebarCollapsed">User Management</span>
+        </li>
+        <li class="menu-item" [class.active]="activeMenu==='roles'" (click)="selectMenu('roles')">
+          <i class="fas fa-user-shield"></i>
+          <span *ngIf="!sidebarCollapsed">Roles</span>
+        </li>
+        <li class="menu-item" [class.active]="activeMenu==='settings'" (click)="selectMenu('settings')">
+          <i class="fas fa-cog"></i>
+          <span *ngIf="!sidebarCollapsed">Settings</span>
+        </li>
+        <li class="menu-item" (click)="selectMenu('logout')">
+          <i class="fas fa-sign-out-alt"></i>
+          <span *ngIf="!sidebarCollapsed">Logout</span>
+        </li>
+      </ul>
+    </nav>
+  </aside>
+
+  <!-- MAIN (user management content) -->
+  <div class="user-main" [class.shifted]="!sidebarCollapsed">
+   
+
+    <!-- Curved Header + Search -->
+    <div class="header-box curved">
+      <div class="header-left">
+        <h2>User Management</h2>
+        <p class="subtitle">Manage all users, roles, and statuses</p>
+      </div>
+      <div class="header-right">
+        <input type="text" placeholder="Search users..." [(ngModel)]="searchText" />
+        <button class="add-btn small" (click)="openModal()">+ Add User</button>
+      </div>
+    </div>
+
+    <!-- User Cards -->
+    <div class="user-cards">
+      <div class="user-card" *ngFor="let user of filteredUsers()">
+        <div class="card-info">
+          <div><strong>ID:</strong> {{ user.id }}</div>
+          <div><strong>Username:</strong> {{ user.username }}</div>
+          <div><strong>Email:</strong> {{ user.email }}</div>
+          <div><strong>Company:</strong> {{ user.company }}</div>
+          <div><strong>Role:</strong> {{ user.role }}</div>
+          <div>
+            <strong>Status:</strong>
+            <span [class.active]="user.status==='Active'" [class.inactive]="user.status==='Inactive'">
+              {{ user.status }}
+            </span>
+          </div>
+        </div>
+        <div class="card-actions">
+          <button class="edit-btn" (click)="openModal(user)">Edit</button>
+          <button class="delete-btn" (click)="deleteUser(user.id)">Delete</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal" *ngIf="showModal">
+      <div class="modal-content">
+        <h3>{{ editMode ? 'Edit User' : 'Add User' }}</h3>
+        <form (ngSubmit)="saveUser()" class="modal-form">
+          <input type="text" placeholder="Username" [(ngModel)]="currentUser.username" name="username" required />
+          <input type="email" placeholder="Email" [(ngModel)]="currentUser.email" name="email" required />
+          <input type="text" placeholder="Company" [(ngModel)]="currentUser.company" name="company" />
+          <select [(ngModel)]="currentUser.role" name="role">
+            <option value="User">User</option>
+            <option value="Manager">Manager</option>
+            <option value="Admin">Admin</option>
+          </select>
+          <select [(ngModel)]="currentUser.status" name="status">
+            <option value="Active">Active</option>
+            <option value="Inactive">Inactive</option>
+          </select>
+          <div class="modal-actions">
+            <button type="submit" class="save-btn">Save</button>
+            <button type="button" class="cancel-btn" (click)="showModal=false">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div> <!-- end user-main -->
+</div>
+

@@ -1,0 +1,719 @@
+:host {
+  display: block;
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+}
+
+/* ===== Light Mode (default) ===== */
+.app-root {
+  display: flex;
+  min-height: 100vh;
+  background: #F5F7FA;
+  color: #212121;
+  transition: background 0.25s ease, color 0.25s ease;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 260px;
+  background: #FFFFFF;
+  border-right: 1px solid #E0E0E0;
+  padding: 16px;
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: transform 0.3s ease, width 0.25s ease;
+  z-index: 1000;
+  transform: translateX(0);
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.04);
+}
+
+.sidebar:not(.open) {
+  transform: translateX(-100%);
+}
+
+.sidebar.collapsed {
+  width: 72px;
+}
+
+/* Logo */
+.logo-mark {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+}
+
+.logo-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #1976D2;
+  color: #fff;
+  font-weight: bold;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logo-text {
+  font-size: 16px;
+  font-weight: 600;
+  color: #212121;
+}
+
+/* Collapse Button */
+.collapse-btn {
+  position: absolute;
+  right: -12px;
+  top: 6px;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: none;
+  background-color: #1976D2;
+  color: white;
+  font-size: 18px;
+  text-align: center;
+  line-height: 28px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(12, 18, 28, 0.1);
+  transition: background 0.3s ease;
+}
+
+.collapse-btn:hover {
+  background: #1565C0;
+}
+
+.collapse-btn i {
+  color: #fff;
+}
+
+/* Menu */
+.menu {
+  flex: 1;
+  margin-top: 8px;
+}
+
+.menu ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  border-radius: 8px;
+  color: #212121;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.menu-item i {
+  width: 22px;
+  text-align: center;
+  font-size: 18px;
+  color: #757575;
+}
+
+.menu-item:hover {
+  background: #E3F2FD;
+}
+
+.menu-item.active {
+  background: #1976D216;
+  border-left: 4px solid #1976D2;
+  color: #0F1724;
+}
+
+/* Main Content */
+.main {
+  margin-left: 260px;
+  flex: 1;
+  padding: 24px;
+  transition: margin-left 0.25s ease;
+  max-width: calc(100vw - 260px);
+  box-sizing: border-box;
+}
+
+.sidebar.collapsed ~ .main {
+  margin-left: 72px;
+  max-width: calc(100vw - 72px);
+}
+
+.sidebar:not(.open) ~ .main {
+  margin-left: 0;
+  max-width: 100vw;
+}
+
+/* Topbar */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: #FFFFFF;
+  border: 1px solid #E0E0E0;
+  padding: 12px 18px;
+  border-radius: 10px;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.03);
+  margin-bottom: 24px;
+  margin-left: 24px;
+}
+
+/* Dark Mode Button */
+.dark-mode-btn {
+  padding: 8px 15px;
+  background-color: transparent;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  cursor: pointer;
+  color: inherit;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.dark-mode-btn:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* Filters */
+.filter-container {
+  margin: 20px 0;
+  margin-left: 24px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.filter-label {
+  font-weight: 600;
+  margin-right: 8px;
+  color: #212121;
+}
+
+.date-select,
+.date-input,
+.input-field {
+  flex: 0 1 180px;
+  padding: 10px 15px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.date-select:focus,
+.date-input:focus,
+.input-field:focus {
+  border-color: #3f51b5;
+  box-shadow: 0 0 5px rgba(63, 81, 181, 0.3);
+  outline: none;
+}
+
+.search-btn {
+  padding: 10px 20px;
+  background-color: #3f51b5;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.search-btn:hover {
+  background-color: #32408f;
+}
+
+/* Stats */
+.stats-row {
+  display: flex;
+  gap: 30px;
+  flex-wrap: wrap;
+  margin-bottom: 25px;
+  margin-left: 24px;
+}
+
+.stat {
+  flex: 1 1 0;
+  min-width: 120px;
+  padding: 14px;
+  border-radius: 10px;
+  background: #FFFFFF;
+  border: 2px solid transparent;
+  box-shadow: 0 8px 24px rgba(12, 18, 28, 0.03);
+}
+
+.stat-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: #212121;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: #757575;
+  margin-bottom: 8px;
+}
+
+.progress-bar {
+  height: 6px;
+  background: #F1F5F9;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.progress {
+  height: 100%;
+  width: 40%;
+  background: #009688;
+}
+
+/* Charts */
+.charts-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 50px;
+  margin-bottom: 50px;
+  margin-left: 24px;
+}
+
+.chart-card {
+  height: 220px;
+  width: 92%;
+  background: #FFFFFF;
+  border-radius: 10px;
+  padding: 16px;
+  border: 1px solid #E0E0E0;
+  box-shadow: 0 10px 20px rgba(10, 20, 40, 0.03);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.card-head {
+  font-weight: 700;
+  color: #212121;
+  margin-bottom: 12px;
+}
+
+.card-body {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-top: 4px;
+  margin-top: -20px;
+  box-sizing: border-box;
+}
+
+/* Footer */
+.footer {
+  margin-top: 24px;
+  display: flex;
+  justify-content: space-between;
+  color: #94A3B8;
+  padding: 10px 0;
+}
+
+/* Responsive Chart Grid */
+@media (max-width: 1024px) {
+  .charts-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 600px) {
+  .charts-row {
+    grid-template-columns: 1fr;
+  }
+  .chart-card {
+    height: auto;
+  }
+}
+
+/* ===== Dark Mode ===== */
+.app-root.dark {
+  background-color: #121212;
+  color: #f5f5f5;
+}
+
+/* Sidebar (dark) */
+.app-root.dark .sidebar {
+  background: #1e1e1e;
+  border-right: 1px solid #333;
+  box-shadow: 2px 0 8px rgba(0,0,0,0.3);
+}
+.app-root.dark .logo-text {
+  color: #f5f5f5;
+}
+.app-root.dark .menu-item {
+  color: #e6e6e6;
+}
+.app-root.dark .menu-item i {
+  color: #bdbdbd;
+}
+.app-root.dark .menu-item:hover {
+  background: #263238;
+}
+.app-root.dark .menu-item.active {
+  background: #2a2a2a;
+  border-left-color: #3f51b5;
+  color: #ffffff;
+}
+
+/* Main content (dark) */
+.app-root.dark .main {
+  background: #121212;
+}
+
+/* Topbar (dark) */
+.app-root.dark .topbar {
+  background: #1e1e1e;
+  border-color: #333;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+}
+
+/* Filters (dark) */
+.app-root.dark .filter-label {
+  color: #eaeaea;
+}
+.app-root.dark .date-select,
+.app-root.dark .date-input,
+.app-root.dark .input-field {
+  background: #2a2a2a;
+  color: #ffffff;
+  border-color: #555;
+}
+.app-root.dark .date-select option {
+  background: #2a2a2a;
+  color: #ffffff;
+}
+.app-root.dark .date-select:focus,
+.app-root.dark .date-input:focus,
+.app-root.dark .input-field:focus {
+  border-color: #5c6bc0;
+  box-shadow: 0 0 5px rgba(92, 107, 192, 0.4);
+}
+.app-root.dark .search-btn {
+  background: #5c6bc0;
+}
+.app-root.dark .search-btn:hover {
+  background: #7785df;
+}
+
+/* Stats (dark) */
+.app-root.dark .stat {
+  background: #1e1e1e !important;
+  color: #ffffff;
+  border-color: #333;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+}
+.app-root.dark .stat-value {
+  color: #ffffff;
+}
+.app-root.dark .stat-label {
+  color: #c7c7c7;
+}
+.app-root.dark .progress-bar {
+  background: #2b2b2b;
+}
+.app-root.dark .progress {
+  background: #26a69a;
+}
+
+/* Charts (dark) */
+.app-root.dark .chart-card {
+  background: #1e1e1e;
+  border-color: #333;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.25);
+}
+.app-root.dark .card-head {
+  color: #ffffff;
+}
+.app-root.dark .card-body {
+  background: transparent;
+}
+/* Canvas stays transparent to blend with card */
+.app-root.dark canvas {
+  background: transparent !important;
+}
+
+/* Footer (dark) */
+.app-root.dark .footer {
+  color: #b0bec5;
+}
+
+/* Dark mode button (dark) maintains contrast */
+.app-root.dark .dark-mode-btn {
+  border-color: #555;
+}
+.app-root.dark .dark-mode-btn:hover {
+  background-color: rgba(255, 255, 255, 0.06);
+}  
+
+
+/* Dropdown styling for Product & Company */
+.input-field {
+  padding: 8px 12px;
+  margin-right: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+  outline: none;
+  background-color: #fff;
+  color: #333;
+  min-width: 180px; /* adjust width as needed */
+  transition: all 0.2s ease-in-out;
+}
+
+.input-field:focus {
+  border-color: #6f42c1; /* match your stats color */
+  box-shadow: 0 0 5px rgba(111, 66, 193, 0.4);
+}
+
+.filter-container select.input-field {
+  cursor: pointer;
+}
+
+/* Optional: match dark mode */
+.app-root.dark .input-field {
+  background-color: #2c2c2c;
+  color: #f1f1f1;
+  border-color: #555;
+}
+
+.app-root.dark .input-field:focus {
+  border-color: #a179e2;
+  box-shadow: 0 0 5px rgba(161, 121, 226, 0.5);
+}
+
+
+
+.second-header {
+  background-color: #ffffff !important; /* Pure white */
+  padding: 1rem 2rem;
+  border-bottom: 1px solid #e0e0e0;
+  color: #212121;
+  border-radius: 12px;
+  margin: 1rem 1rem 1rem 2rem; /* Top, Right, Bottom, Left */
+}
+
+
+/* Dark mode override */
+.app-root.dark .second-header {
+  background-color: #1e1e1e !important;
+  color: #f0f0f0;
+  border-bottom: 1px solid #444;
+}
+
+.filters-header {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.filters-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: flex-end;
+  padding-left: 1rem;
+}
+
+.filter-item {
+  display: flex;
+  flex-direction: column;
+  background-color: #ffffff !important; /* Pure white */
+  padding: 0.20rem;
+  border-radius: 10px;
+  border: none; /* Remove any border that adds shadow effect */
+}
+
+/* Dark mode override */
+.app-root.dark .filter-item {
+  background-color: #2a2a2a !important;
+  border: none;
+}
+
+.filter-item label {
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+  color: #212121;
+}
+
+.app-root.dark .filter-item label {
+  color: #f0f0f0;
+}
+
+.filter-item select,
+.filter-item input {
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  min-width: 140px;
+  background-color: #ffffff !important;
+  color: #212121;
+  box-shadow: none; /* Remove faint shadow */
+}
+
+/* Dark mode override */
+.app-root.dark .filter-item select,
+.app-root.dark .filter-item input {
+  background-color: #2a2a2a !important;
+  color: #f0f0f0;
+  border: 1px solid #555;
+  box-shadow: none;
+}
+
+.filter-item input[type="date"] {
+  background-image: url('data:image/svg+xml;utf8,<svg fill="gray" height="16" viewBox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11z"/></svg>');
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 16px;
+}
+
+.app-root.dark .filter-item input[type="date"] {
+  background-image: url('data:image/svg+xml;utf8,<svg fill="lightgray" height="16" viewBox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11z"/></svg>');
+}
+
+.toggle-btn {
+  background-color: #ffffff;       /* Light mode: white background */
+  color: #212121;                  /* Dark text */
+  border: 1px solid #212121;       /* Dark border */
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  box-shadow: none;
+  transition: background-color 0.25s, transform 0.15s;
+}
+
+.toggle-btn:hover {
+  background-color: #f5f5f5;       /* Light gray hover */
+  transform: translateY(-1px);
+}
+
+/* ===== DARK MODE OVERRIDE ===== */
+.app-root.dark .toggle-btn {
+  background-color: #2a2a2a;       /* Dark background */
+  color: #f0f0f0;                  /* Light text */
+  border: 1px solid #f0f0f0;       /* Light border */
+}
+
+.app-root.dark .toggle-btn:hover {
+  background-color: #3a3a3a;       /* Slightly lighter on hover */
+}
+
+
+
+.app-root.dark .toggle-btn {
+  background-color: #0056b3;
+  color: #ffffff;
+  box-shadow: none;
+}
+
+.advanced-filters {
+  overflow: hidden;
+  max-height: 0;
+  transition: max-height 0.5s ease, padding 0.5s ease;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.advanced-filters.open {
+  max-height: 200px;
+  padding-top: 1rem;
+}
+
+.export-btn {
+  position: relative;
+  background-color: #ffffff;
+  color: #212121;
+  border: 1px solid #ccc;
+  padding: 0.4rem 0.8rem;
+  margin-top: 1rem;         /* ✅ Added top spacing */
+  margin-left: 0.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  transition: background-color 0.25s, transform 0.15s;
+}
+
+.export-btn i {
+  font-size: 1rem;
+}
+
+.export-btn:hover {
+  background-color: #f5f5f5;
+  transform: translateY(-1px);
+}
+
+/* ===== DARK MODE OVERRIDE ===== */
+.app-root.dark .export-btn {
+  background-color: #2a2a2a;
+  color: #f0f0f0;
+  border: 1px solid #f0f0f0;
+  margin-top: 1rem;         /* ✅ Also added in dark mode */
+  margin-left: 0;
+  margin-right: auto;
+}
+
+.app-root.dark .export-btn:hover {
+  background-color: #3a3a3a;
+}
+
+/* ===== DARK MODE OVERRIDE ===== */
+.app-root.dark .export-btn {
+  background-color: #2a2a2a;       /* Dark background */
+  color: #f0f0f0;                  /* Light text */
+  border: 1px solid #f0f0f0;       /* Light border */
+  margin-left: 0;                  /* Remove left margin */
+  margin-right: auto;              /* Push to left side */
+}
+
+.app-root.dark .export-btn:hover {
+  background-color: #3a3a3a;       /* Slightly lighter on hover */
+}
+
+
+
+/* Tooltip */
+.export-btn::after {
+  content: "Export PDF";
+  position: absolute;
+  bottom: 120%; /* above the button */
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #1f2937; /* dark gray tooltip */
+  color: #fff;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.export-btn:hover::after {
+  opacity: 1;
+  transform: translateX(-50%) translateY(-2px);
+}    
+
+
+
+
+
