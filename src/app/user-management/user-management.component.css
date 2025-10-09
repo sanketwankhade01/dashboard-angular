@@ -63,6 +63,9 @@
 .menu-item:hover { background: #E3F2FD; }
 .menu-item.active { background: #1976D216; border-left: 4px solid #1976D2; color: #0F1724; }
 
+/* Disabled menu item */
+.menu-item.disabled { opacity: 0.45; pointer-events: none; }
+
 /* ===== Main Area ===== */
 .user-main {
   margin-left: 260px; flex: 1; padding: 24px;

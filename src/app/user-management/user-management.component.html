@@ -19,19 +19,19 @@
 
     <nav class="menu">
       <ul>
-        <li class="menu-item" [class.active]="activeMenu==='dashboard'" (click)="selectMenu('dashboard')">
+        <li class="menu-item" [class.active]="activeMenu==='dashboard'" (click)="trySelect('dashboard')">
           <i class="fas fa-th-large"></i>
           <span *ngIf="!sidebarCollapsed">Dashboard</span>
         </li>
-        <li class="menu-item" [class.active]="activeMenu==='user'" (click)="selectMenu('user')">
+        <li class="menu-item" [class.active]="activeMenu==='user'" [class.disabled]="!hasAnyRole(['Admin','Manager'])" (click)="trySelect('user',['Admin','Manager'])">
           <i class="fas fa-users"></i>
           <span *ngIf="!sidebarCollapsed">User Management</span>
         </li>
-        <li class="menu-item" [class.active]="activeMenu==='roles'" (click)="selectMenu('roles')">
+        <li class="menu-item" [class.active]="activeMenu==='roles'" [class.disabled]="!hasRole('Admin')" (click)="trySelect('roles',['Admin'])">
           <i class="fas fa-user-shield"></i>
           <span *ngIf="!sidebarCollapsed">Roles</span>
         </li>
-        <li class="menu-item" [class.active]="activeMenu==='settings'" (click)="selectMenu('settings')">
+        <li class="menu-item" [class.active]="activeMenu==='settings'" [class.disabled]="!hasAnyRole(['Admin'])" (click)="trySelect('settings',['Admin'])">
           <i class="fas fa-cog"></i>
           <span *ngIf="!sidebarCollapsed">Settings</span>
         </li>

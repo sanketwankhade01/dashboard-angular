@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NgChartsModule } from 'ng2-charts';
 import { RouterModule, Router } from '@angular/router';
+import { AuthService } from '../auth.service';
 import { DashboardService, ChartData, ChartResponse } from './dashboard.service';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
@@ -41,8 +42,26 @@ export class DashboardComponent implements OnInit {
   constructor(
     private dashboardService: DashboardService,
     private router: Router,
-    private cdRef: ChangeDetectorRef
+    private cdRef: ChangeDetectorRef,
+    private auth: AuthService
   ) {}
+
+  hasRole(role: string) {
+    return this.auth.hasRole(role);
+  }
+
+  hasAnyRole(roles: string[]) {
+    if (!roles || roles.length === 0) return true;
+    return roles.some(r => this.hasRole(r));
+  }
+
+  trySelect(name: string, roles: string[] = []) {
+    if (roles.length === 0 || this.hasAnyRole(roles)) {
+      this.selectMenu(name);
+    } else {
+      alert('Access denied: insufficient role privileges');
+    }
+  }
 
   ngOnInit(): void {
     this.loadFilters();

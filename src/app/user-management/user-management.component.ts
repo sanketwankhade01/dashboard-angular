@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router'; // ✅ added for navigation
+import { AuthService } from '../auth.service';
 
 interface User {
   id: number;
@@ -37,7 +38,21 @@ export class UserManagementComponent {
   ];
   showAdvancedFilters: boolean = false;
 
-  constructor(private router: Router) {} // ✅ inject Router
+  constructor(private router: Router, private auth: AuthService) {} // ✅ inject Router
+
+  hasAnyRole(roles: string[]) {
+    if (!roles || roles.length === 0) return true;
+    return roles.some(r => this.hasRole(r));
+  }
+
+  trySelect(name: string, roles: string[] = []) {
+    if (roles.length === 0 || this.hasAnyRole(roles)) {
+      this.selectMenu(name);
+    } else {
+      // optional: show toast or feedback
+      alert('Access denied: insufficient role privileges');
+    }
+  }
 
   applyFilters() {
     console.log('Filters applied:', this.selectedDate, this.selectedCompany);
@@ -76,6 +91,10 @@ export class UserManagementComponent {
       localStorage.clear(); // optional: clear session
       this.router.navigate(['/login']); // ✅ navigate to login
     }
+  }
+
+  hasRole(role: string) {
+    return this.auth.hasRole(role);
   }
 
   // ====== USER MODAL / CRUD ======
