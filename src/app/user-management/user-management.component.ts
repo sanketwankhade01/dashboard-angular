@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router'; // ✅ added for navigation
+import { UserManagementService } from './user-management.service';
 
 interface User {
   id: number;
@@ -37,7 +38,9 @@ export class UserManagementComponent {
   ];
   showAdvancedFilters: boolean = false;
 
-  constructor(private router: Router) {} // ✅ inject Router
+  constructor(private router: Router, private userManagementService: UserManagementService) {
+    this.getEmployees();
+  } // ✅ inject Router
 
   applyFilters() {
     console.log('Filters applied:', this.selectedDate, this.selectedCompany);
@@ -97,8 +100,17 @@ export class UserManagementComponent {
     } else {
       const newId = this.users.length ? Math.max(...this.users.map(u => u.id)) + 1 : 1;
       this.users.push({ ...this.currentUser, id: newId });
-    }
-    this.showModal = false;
+      this.currentUser.id = newId;
+      this.userManagementService.createEmployee(this.currentUser).subscribe({
+        next: (response:any) => {
+          console.log('Employee saved:', response);
+        },
+        error: (err:any) => {
+          console.error('Error saving employee:', err);
+        }
+      });
+        }
+        this.showModal = false;
   }
 
   deleteUser(id: number) {
@@ -129,5 +141,19 @@ export class UserManagementComponent {
     }
 
     return result;
+  }
+
+  getEmployees() {
+    this.userManagementService.getEmployees().subscribe({
+      next: (data:any) => {
+        if (data && Array.isArray(data)) {
+          this.users = data;
+        console.log('Employees fetched:', data);
+        }
+      },
+      error: (err:any) => {
+        console.error('Error fetching employees:', err);
+      }
+    });
   }
 }

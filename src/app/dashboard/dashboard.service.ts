@@ -2,6 +2,8 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { ChartType } from 'chart.js';
+import { environment } from '../../environments/environment';
+import { AppSettings } from '../app.setting';
 
 export interface ChartDataset {
   label?: string;
@@ -26,7 +28,7 @@ export interface ChartResponse {
   providedIn: 'root'
 })
 export class DashboardService {
-  private apiUrl = 'http://127.0.0.1:5000/api';
+  private apiUrl = environment.apiUrl;
 
   constructor(private http: HttpClient) {}
 
@@ -39,7 +41,7 @@ export class DashboardService {
     if (filterType && filterType !== 'all') params = params.set('filterType', filterType);
     if (filterValue) params = params.set('filterValue', filterValue);
 
-    return this.http.get<any[]>(`${this.apiUrl}/stats`, { params });
+  return this.http.get<any[]>(AppSettings.endpoints.stats, { params });
   }
 
   // 🔹 Charts API
@@ -49,7 +51,7 @@ export class DashboardService {
     if (filterType && filterType !== 'all') params = params.set('product', filterType);
     if (filterValue) params = params.set('company', filterValue);
 
-    return this.http.get<ChartResponse[]>(`${this.apiUrl}/charts`, { params });
+  return this.http.get<ChartResponse[]>(AppSettings.endpoints.charts, { params });
   }
 
   // 🔹 Monthly trends API
@@ -58,22 +60,22 @@ export class DashboardService {
     if (filterType && filterType !== 'all') params = params.set('product', filterType);
     if (filterValue) params = params.set('company', filterValue);
 
-    return this.http.get<ChartData>(`${this.apiUrl}/monthly-trends`, { params });
+  return this.http.get<ChartData>(AppSettings.endpoints.monthlyTrends, { params });
   }
 
   // 🔹 Dates API
   getDates(): Observable<string[]> {
-    return this.http.get<string[]>(`${this.apiUrl}/dates`);
+  return this.http.get<string[]>(AppSettings.endpoints.dates);
   }
 
   // 🔹 Employees as Product_Name API
   getEmployees(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/Product_Name`);
+  return this.http.get<any[]>(AppSettings.endpoints.productName);
   }
 
   // 🔹 Companies API
   getCompanies(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/companies`);
+  return this.http.get<any[]>(AppSettings.endpoints.companies);
   }
 }
 
