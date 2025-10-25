@@ -14,18 +14,27 @@ export class AuthService {
   constructor(private router: Router) {}
 
   login(payload: UserPayload) {
-    localStorage.setItem(this.storageKey, JSON.stringify(payload));
+    if (typeof localStorage !== 'undefined') {
+      try { localStorage.setItem(this.storageKey, JSON.stringify(payload)); } catch {}
+    }
   }
 
   logout() {
-    localStorage.removeItem(this.storageKey);
-    this.router.navigate(['/login']);
+    if (typeof localStorage !== 'undefined') {
+      try { localStorage.removeItem(this.storageKey); } catch {}
+    }
+    try { this.router.navigate(['/login']); } catch {}
   }
 
   getUser(): UserPayload | null {
-    const raw = localStorage.getItem(this.storageKey);
-    if (!raw) return null;
-    try { return JSON.parse(raw) as UserPayload; } catch { return null; }
+    try {
+      if (typeof localStorage === 'undefined') return null;
+      const raw = localStorage.getItem(this.storageKey);
+      if (!raw) return null;
+      return JSON.parse(raw) as UserPayload;
+    } catch {
+      return null;
+    }
   }
 
   isLoggedIn(): boolean { return !!this.getUser(); }
@@ -35,4 +44,18 @@ export class AuthService {
     if (!user) return false;
     return user.roles?.includes(role);
   }
+
+  // Convenience helpers
+  getRoles(): string[] {
+    const user = this.getUser();
+    return user?.roles || [];
+  }
+
+  getRole(): string | null {
+    const roles = this.getRoles();
+    return roles.length ? roles[0] : null;
+  }
+
+  isAdmin(): boolean { return this.hasRole('Admin') || this.hasRole('admin'); }
+  isUser(): boolean { return this.hasRole('User') || this.hasRole('user'); }
 }

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router'; // ✅ added for navigation
 import { UserManagementService } from './user-management.service';
+import { AuthService } from '../auth.service';
 
 interface User {
   id: number;
@@ -38,7 +39,7 @@ export class UserManagementComponent {
   ];
   showAdvancedFilters: boolean = false;
 
-  constructor(private router: Router, private userManagementService: UserManagementService) {
+  constructor(private router: Router, private userManagementService: UserManagementService, public auth: AuthService) {
     this.getEmployees();
   } // ✅ inject Router
 

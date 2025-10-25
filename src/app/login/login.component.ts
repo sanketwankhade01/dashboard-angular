@@ -34,12 +34,18 @@ export class LoginComponent {
     this.loginService.getEmpLogin(this.email, this.password).subscribe({
       next: (res: any) => {
         // Expecting backend to return token, roles and optional user info.
-        const token = res?.token || res?.accessToken || null;
-        const roles = res?.user?.App_Role || (res?.user?.App_Role ? [res.user.App_Role] : ['User']);
-        const username = res?.user?.email;
+  const token = res?.token || res?.accessToken || null;
+  // Backend may return a single role string or an array. Normalize to string[]
+  let roles: string[] = [];
+  const rawRole = res?.user?.App_Role || res?.user?.role || res?.role || null;
+  if (Array.isArray(rawRole)) roles = rawRole;
+  else if (rawRole) roles = [rawRole];
+  else roles = ['User'];
 
-        // Persist using AuthService
-        this.auth.login({ username, roles, token });
+  const username = res?.user?.email || res?.user?.username || res?.email || 'anonymous';
+
+  // Persist using AuthService
+  this.auth.login({ username, roles, token });
         this.router.navigate(['/dashboard']);
       },
       error: (err: any) => {

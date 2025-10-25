@@ -21,7 +21,7 @@
           <i class="fas fa-th-large"></i>
           <span *ngIf="!sidebarCollapsed">Dashboard</span>
         </li>
-        <li class="menu-item" [class.active]="activeMenu==='user'" (click)="selectMenu('user')">
+        <li *ngIf="auth.isAdmin()" class="menu-item" [class.active]="activeMenu==='user'" (click)="selectMenu('user')">
           <i class="fas fa-users"></i>
           <span *ngIf="!sidebarCollapsed">User Management</span>
         </li>

@@ -4,8 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { NgChartsModule } from 'ng2-charts';
 import { RouterModule, Router } from '@angular/router';
 import { DashboardService, ChartData, ChartResponse } from './dashboard.service';
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
+import { AuthService } from '../auth.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -42,7 +41,9 @@ export class DashboardComponent implements OnInit {
     private dashboardService: DashboardService,
     private router: Router,
     private cdRef: ChangeDetectorRef
+    , public auth: AuthService
   ) {}
+
 
   ngOnInit(): void {
     this.loadFilters();
@@ -130,22 +131,27 @@ export class DashboardComponent implements OnInit {
     const wasHidden = advancedFilters ? !advancedFilters.classList.contains('open') : false;
     if (advancedFilters && wasHidden) advancedFilters.classList.add('open');
 
-    html2canvas(data, {
-      scale: 2,
-      useCORS: true,
-      scrollY: -window.scrollY,
-      allowTaint: true,
-      logging: false
-    }).then(canvas => {
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-      pdf.save('dashboard.pdf');
+    // Dynamically import to avoid SSR errors
+    Promise.all([import('html2canvas'), import('jspdf')]).then(([html2canvasMod, jspdfMod]) => {
+      const html2canvas = (html2canvasMod as any).default || html2canvasMod;
+      const jsPDF = (jspdfMod as any).default || jspdfMod;
+      html2canvas(data, {
+        scale: 2,
+        useCORS: true,
+        scrollY: -window.scrollY,
+        allowTaint: true,
+        logging: false
+      }).then((canvas: any) => {
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const pdfWidth = (pdf as any).internal.pageSize.getWidth();
+        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+        (pdf as any).addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+        (pdf as any).save('dashboard.pdf');
 
-      if (advancedFilters && wasHidden) advancedFilters.classList.remove('open');
-    }).catch(err => console.error('PDF export error:', err));
+        if (advancedFilters && wasHidden) advancedFilters.classList.remove('open');
+      }).catch((err: any) => console.error('PDF export error:', err));
+    }).catch(err => console.error('Failed to load PDF libs:', err));
   }
 }
 
