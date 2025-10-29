@@ -19,6 +19,8 @@ export const AppSettings = {
     // User management
     employees: `${environment.apiUrl}/employees`, // create employee (POST)
     getEmployees: `${environment.apiUrl}/getemployees`, // list employees (GET)
+  // Tickets
+  tickets: `${environment.apiUrl}/tickets`, // list tickets (GET) - expects query params
 
     // Auth (placeholders - implement on backend if available)
     login: `${environment.apiUrl}/auth/login`,

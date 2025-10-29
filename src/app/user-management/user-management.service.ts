@@ -28,6 +28,26 @@ private apiUrl = environment.apiUrl;
   }
 
    getEmployees(): Observable<any[]> {
-  return this.http.get<any[]>(AppSettings.endpoints.getEmployees);
+      return this.http.get<any[]>(AppSettings.endpoints.getEmployees);
+    }
+
+    /**
+     * Fetch tickets filtered by company id and company email.
+     * Both query parameter keys are added (lowercase and PascalCase) to be
+     * resilient to backend naming differences.
+     *
+     * Example request: /tickets?company_id=123&company_email=foo@bar.com
+     */
+    getTicketsByCompany(companyId: string | number, companyEmail: string): Observable<any[]> {
+      if (!companyId || !companyEmail) {
+        throw new Error('companyId and companyEmail are required');
+      }
+
+      let params = new HttpParams()
+        .set('company_id', String(companyId))
+        .set('Company_Email', String(companyEmail));
+
+      // add alternate casing commonly seen in APIs
+      return this.http.get<any[]>(AppSettings.endpoints.tickets, { params });
     }
 }

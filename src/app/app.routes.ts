@@ -13,7 +13,9 @@ export const routes: Routes = [
   { path: 'dashboard', component: DashboardComponent },
 
   // ✅ Correct route for User Management
-  { path: 'user-management', component: UserManagementComponent, canActivate: [RoleGuard], data: { roles: ['Admin'] } },
+  // { path: 'user-management', component: UserManagementComponent, canActivate: [RoleGuard], data: { roles: ['Admin'] } },
+  // Route for Agent-only My Ticket page (re-uses UserManagementComponent)
+  { path: 'my-ticket', component: UserManagementComponent, canActivate: [RoleGuard], data: { roles: ['Agent'] } },
 
   { path: '**', redirectTo: 'login' }
 ];

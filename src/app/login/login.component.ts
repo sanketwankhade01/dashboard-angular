@@ -35,12 +35,19 @@ export class LoginComponent {
       next: (res: any) => {
         // Expecting backend to return token, roles and optional user info.
   const token = res?.token || res?.accessToken || null;
-  // Backend may return a single role string or an array. Normalize to string[]
+  // Backend may return a single role string or an array. Normalize to string[] and
+  // map unknown roles to 'Agent' (we only support 'Admin' and 'Agent')
   let roles: string[] = [];
   const rawRole = res?.user?.App_Role || res?.user?.role || res?.role || null;
-  if (Array.isArray(rawRole)) roles = rawRole;
-  else if (rawRole) roles = [rawRole];
-  else roles = ['User'];
+  if (Array.isArray(rawRole)) roles = rawRole.map(r => String(r));
+  else if (rawRole) roles = [String(rawRole)];
+  else roles = ['Agent'];
+
+  // Normalize roles to canonical values: only 'Admin' or 'Agent'
+  roles = roles.map(r => {
+    const v = (r || '').toString().toLowerCase();
+    return v === 'admin' ? 'Admin' : 'Agent';
+  });
 
   const username = res?.user?.email || res?.user?.username || res?.email || 'anonymous';
 

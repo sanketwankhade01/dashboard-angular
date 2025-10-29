@@ -21,18 +21,22 @@
           <i class="fas fa-th-large"></i>
           <span *ngIf="!sidebarCollapsed">Dashboard</span>
         </li>
-        <li *ngIf="auth.isAdmin()" class="menu-item" [class.active]="activeMenu==='user'" (click)="selectMenu('user')">
+         <li class="menu-item" *ngIf="auth.isAgent()" [class.active]="activeMenu==='myticket'" (click)="selectMenu('myticket')">
+          <i class="fas fa-th-large"></i>
+          <span *ngIf="!sidebarCollapsed">My Ticket</span>
+        </li>
+        <!-- <li *ngIf="auth.isAdmin()" class="menu-item" [class.active]="activeMenu==='user'" (click)="selectMenu('user')">
           <i class="fas fa-users"></i>
           <span *ngIf="!sidebarCollapsed">User Management</span>
-        </li>
-        <li class="menu-item" [class.active]="activeMenu==='settings'" (click)="selectMenu('settings')">
+        </li> -->
+        <!-- <li class="menu-item" [class.active]="activeMenu==='settings'" (click)="selectMenu('settings')">
           <i class="fas fa-cog"></i>
           <span *ngIf="!sidebarCollapsed">Settings</span>
         </li>
         <li class="menu-item" [class.active]="activeMenu==='account'" (click)="selectMenu('account')">
           <i class="fas fa-id-badge"></i>
           <span *ngIf="!sidebarCollapsed">Account</span>
-        </li>
+        </li> -->
         <li class="menu-item" [class.active]="activeMenu==='logout'" (click)="selectMenu('logout')">
           <i class="fas fa-sign-out-alt"></i>
           <span *ngIf="!sidebarCollapsed">Logout</span>

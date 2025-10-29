@@ -16,7 +16,7 @@ import { AuthService } from '../auth.service';
 export class DashboardComponent implements OnInit {
   sidebarOpen = true;
   sidebarCollapsed = false;
-  activeMenu: 'dashboard' | 'user' | 'settings' | 'account' | 'logout' = 'dashboard';
+  activeMenu: 'dashboard' | 'myticket' | 'settings'  | 'logout' = 'dashboard';
 
   isDarkMode = false;
 
@@ -109,7 +109,7 @@ export class DashboardComponent implements OnInit {
     if (window.innerWidth <= 920) this.sidebarOpen = false;
 
     if (menu === 'logout') this.logout();
-    if (menu === 'user') this.router.navigate(['/user-management']); // ✅ navigate to User Management
+    if (menu === 'myticket') this.router.navigate(['/my-ticket']); // navigate to My Ticket (Agent-only)
   }
 
   toggleDarkMode() {

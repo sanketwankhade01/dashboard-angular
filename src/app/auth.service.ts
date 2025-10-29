@@ -42,7 +42,8 @@ export class AuthService {
   hasRole(role: string): boolean {
     const user = this.getUser();
     if (!user) return false;
-    return user.roles?.includes(role);
+    // case-insensitive compare to be resilient to backend variations
+    return !!user.roles?.some(r => (r || '').toString().toLowerCase() === (role || '').toString().toLowerCase());
   }
 
   // Convenience helpers
@@ -56,6 +57,12 @@ export class AuthService {
     return roles.length ? roles[0] : null;
   }
 
-  isAdmin(): boolean { return this.hasRole('Admin') || this.hasRole('admin'); }
-  isUser(): boolean { return this.hasRole('User') || this.hasRole('user'); }
+  // Helper to check for Admin role
+  isAdmin(): boolean { return this.hasRole('Admin'); }
+
+  // Helper to check for Agent role
+  isAgent(): boolean { return this.hasRole('Agent'); }
+
+  // Backwards compat alias (some templates may call isUser())
+  isUser(): boolean { return this.isAgent(); }
 }
