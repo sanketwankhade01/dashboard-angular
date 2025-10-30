@@ -23,17 +23,9 @@
           <i class="fas fa-th-large"></i>
           <span *ngIf="!sidebarCollapsed">Dashboard</span>
         </li>
-        <li class="menu-item" [class.active]="activeMenu==='user'" (click)="selectMenu('user')">
-          <i class="fas fa-users"></i>
-          <span *ngIf="!sidebarCollapsed">User Management</span>
-        </li>
-        <li class="menu-item" [class.active]="activeMenu==='roles'" (click)="selectMenu('roles')">
-          <i class="fas fa-user-shield"></i>
-          <span *ngIf="!sidebarCollapsed">Roles</span>
-        </li>
-        <li class="menu-item" [class.active]="activeMenu==='settings'" (click)="selectMenu('settings')">
-          <i class="fas fa-cog"></i>
-          <span *ngIf="!sidebarCollapsed">Settings</span>
+          <li class="menu-item" *ngIf="auth.isAgent()" [class.active]="activeMenu==='myticket'" (click)="selectMenu('myticket')">
+          <i class="fas fa-th-large"></i>
+          <span *ngIf="!sidebarCollapsed">My Ticket</span>
         </li>
         <li class="menu-item" (click)="selectMenu('logout')">
           <i class="fas fa-sign-out-alt"></i>
@@ -50,17 +42,17 @@
     <!-- Curved Header + Search -->
     <div class="header-box curved">
       <div class="header-left">
-        <h2>User Management</h2>
-        <p class="subtitle">Manage all users, roles, and statuses</p>
+        <h2>Ticket Management</h2>
+        <p class="subtitle">Manage all tickets, comments</p>
       </div>
       <div class="header-right">
-        <input type="text" placeholder="Search users..." [(ngModel)]="searchText" />
-        <button class="add-btn small" (click)="openModal()">+ Add User</button>
+        <input type="text" placeholder="Search Tickets..." [(ngModel)]="searchText" />
+        <!-- <button class="add-btn small" (click)="openModal()">+ Add User</button> -->
       </div>
     </div>
 
     <!-- User Cards -->
-    <div class="user-cards">
+    <!-- <div class="user-cards">
       <div class="user-card" *ngFor="let user of filteredUsers()">
         <div class="card-info">
           <div><strong>ID:</strong> {{ user.id }}</div>
@@ -80,9 +72,79 @@
           <button class="delete-btn" (click)="deleteUser(user.id)">Delete</button>
         </div>
       </div>
-    </div>
+    </div> -->
 
-    <!-- Modal -->
+    <div class="header-box">
+    <div class="tickets-section">
+        <!-- <div class="table-actions">
+          <input type="text" placeholder="Company ID" [(ngModel)]="ticketCompanyId" style="margin-right:8px; padding:6px; border-radius:6px; border:1px solid #ddd;" />
+          <input type="text" placeholder="Company Email" [(ngModel)]="ticketCompanyEmail" style="margin-right:8px; padding:6px; border-radius:6px; border:1px solid #ddd;" />
+          <button class="add-btn small" (click)="loadTickets()" [disabled]="loadingTickets">{{ loadingTickets ? 'Loading...' : 'Load Tickets' }}</button>
+          <button class="add-btn small" style="margin-left:8px;" (click)="openTicketModal()">+ Add Ticket</button>
+        </div> -->
+        <div *ngIf="ticketsError" style="color:#b91c1c; padding:8px 0">{{ ticketsError }}</div>
+
+      <div class="table-wrap">
+        <table class="tickets-table">
+          <thead>
+            <tr>
+              <th>Ticket No</th>
+              <th>Category</th>
+              <th>Details</th>
+              <th>Creation Date</th>
+              <th>Closing Date</th>
+              <th>Priority</th>
+              <th>Status</th>
+              <th>Day Open</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let ticket of filteredTickets()">
+              <td>{{ ticket.ticket_no }}</td>
+              <td>{{ ticket.ticket_category }}</td>
+              <td class="details">{{ ticket.ticket_details }}</td>
+              <td>{{ ticket.ticket_creation_date | date:'medium' }}</td>
+              <td>{{ ticket.ticket_closing_date ? (ticket.ticket_closing_date | date:'medium') : '-' }}</td>
+              <td>
+                <span class="badge priority"
+                      [ngClass]="{
+                        'high': ticket.ticket_priority === 'High',
+                        'medium': ticket.ticket_priority === 'Medium',
+                        'low': ticket.ticket_priority === 'Low'
+                      }">
+                  {{ ticket.ticket_priority }}
+                </span>
+              </td>
+              <td>
+                <span class="badge status"
+                      [ngClass]="{
+                        'open': ticket.ticket_status === 'Open' || ticket.ticket_status === 'In Progress',
+                        'closed': ticket.ticket_status === 'Closed',
+                        'onhold': ticket.ticket_status === 'On Hold'
+                      }">
+                  {{ ticket.ticket_status }}
+                </span>
+              </td>
+              <td>
+                {{ ticket.ticket_day_open ?? calculateDaysOpen(ticket.ticket_creation_date, ticket.ticket_closing_date) }}
+              </td>
+              <td class="row-actions">
+                <button class="edit-btn" (click)="openTicketModal(ticket)">Add Comment</button>
+                <!-- <button class="close-btn" (click)="closeTicket(ticket)">Close</button>
+                <button class="delete-btn" (click)="deleteTicket(ticket.ticket_no)">Delete</button> -->
+              </td>
+            </tr>
+
+            <tr *ngIf="filteredTickets().length === 0">
+              <td colspan="9" class="no-data">No tickets found.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    </div>
+    <!-- User Modal -->
     <div class="modal" *ngIf="showModal">
       <div class="modal-content">
         <h3>{{ editMode ? 'Edit User' : 'Add User' }}</h3>
@@ -91,8 +153,7 @@
           <input type="email" placeholder="Email" [(ngModel)]="currentUser.email" name="email" required />
           <input type="text" placeholder="Company" [(ngModel)]="currentUser.company" name="company" />
           <select [(ngModel)]="currentUser.role" name="role">
-            <option value="User">User</option>
-            <option value="Manager">Manager</option>
+            <option value="Agent">Agent</option>
             <option value="Admin">Admin</option>
           </select>
           <select [(ngModel)]="currentUser.status" name="status">
@@ -104,6 +165,53 @@
             <button type="button" class="cancel-btn" (click)="showModal=false">Cancel</button>
           </div>
         </form>
+      </div>
+    </div>
+
+    <!-- Ticket Modal -->
+    <div class="modal" *ngIf="showTicketModal">
+      <div class="modal-content">
+        <h3>{{ ticketEditMode ? 'View/Add comments' : 'Add Ticket' }}</h3>
+        <!-- <form (ngSubmit)="saveTicket()" class="modal-form">
+          <input type="text" placeholder="Category" [(ngModel)]="currentTicket.ticket_category" name="ticket_category" required />
+          <textarea placeholder="Details" [(ngModel)]="currentTicket.ticket_details" name="ticket_details" rows="4"></textarea>
+          <select [(ngModel)]="currentTicket.ticket_priority" name="ticket_priority">
+            <option value="High">High</option>
+            <option value="Medium">Medium</option>
+            <option value="Low">Low</option>
+          </select>
+          <select [(ngModel)]="currentTicket.ticket_status" name="ticket_status">
+            <option value="Open">Open</option>
+            <option value="In Progress">In Progress</option>
+            <option value="On Hold">On Hold</option>
+            <option value="Closed">Closed</option>
+          </select>
+          <div class="modal-actions">
+            <button type="submit" class="save-btn">Save</button>
+            <button type="button" class="cancel-btn" (click)="showTicketModal=false">Cancel</button>
+          </div>
+        </form> -->
+
+        <!-- Comments Section -->
+        <div class="comments-section" style="margin-top:16px;">
+          <h4>Comments</h4>
+          <div *ngIf="(commentsMap[currentTicket.ticket_no] || []).length === 0" class="no-comments">No comments yet.</div>
+          <div class="comment" *ngFor="let c of (commentsMap[currentTicket.ticket_no] || [])">
+            <!-- <div class="comment-meta">
+              <strong>{{ c.author || 'Unknown' }}</strong>
+              <span class="comment-time">{{ c.created_at ? (c.created_at | date:'medium') : '' }}</span>
+            </div> -->
+            <div class="comment-body">{{ c.comment_text }}</div>
+          </div>
+
+          <div class="add-comment" style="margin-top:12px;">
+            <textarea rows="3" placeholder="Add a comment..." [(ngModel)]="currentCommentText" name="new_comment"></textarea>
+            <div style="margin-top:8px; text-align:right;">
+              <button class="add-btn small" (click)="addComment()" [disabled]="!currentCommentText">Add Comment</button>
+              <button type="button" class="cancel-btn" (click)="showTicketModal=false">Cancel</button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div> <!-- end user-main -->
