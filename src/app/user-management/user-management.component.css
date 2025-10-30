@@ -189,7 +189,7 @@ span.inactive { color: #6b7280; font-weight: 600; }
 .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 12px; }
 .save-btn { background: #1976D2; color: #fff; border: none; border-radius: 8px; padding: 8px 12px; cursor: pointer; }
 .save-btn:hover { background: #1565C0; }
-.cancel-btn { background: #6c757d; color: #fff; border: none; border-radius: 8px; padding: 8px 12px; cursor: pointer; }
+.cancel-btn { background: #6c757d; color: #fff; border: none; border-radius: 8px; padding: 8px 12px; cursor: pointer; margin-left: 5px; }
 .cancel-btn:hover { background: #555; }
 
 /* ===== Dark Mode ===== */

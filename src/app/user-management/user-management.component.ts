@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router'; // ✅ added for navigation
 import { UserManagementService } from './user-management.service';
 import { AuthService } from '../auth.service';
+import { LoginServiceService } from '../login/login-service.service';
 
 interface User {
   id: number;
@@ -15,6 +16,7 @@ interface User {
 }
 
 interface Ticket {
+  Uniqueid: number;
   ticket_no: string | number;
   ticket_category: string;
   ticket_details: string;
@@ -23,6 +25,14 @@ interface Ticket {
   ticket_priority: 'High' | 'Medium' | 'Low';
   ticket_status: string;
   ticket_day_open?: number;
+}
+
+interface Comment {
+  comment_id?: string | number;
+  ticket_no: string | number;
+  comment_text: string;
+  author?: string;
+  created_at?: string | Date;
 }
 
 @Component({
@@ -50,8 +60,13 @@ export class UserManagementComponent implements OnInit {
   ];
   showAdvancedFilters: boolean = false;
 
-  constructor(private router: Router, private userManagementService: UserManagementService, public auth: AuthService) {
-    this.getEmployees();
+  constructor(
+    private router: Router,
+    private userManagementService: UserManagementService,
+    public auth: AuthService,
+    private loginService: LoginServiceService
+  ) {
+    // this.getEmployees();
   } // ✅ inject Router
 
   ngOnInit(): void {
@@ -62,6 +77,23 @@ export class UserManagementComponent implements OnInit {
       const dark = localStorage.getItem('helpdesk:isDark');
       if (dark === '1') this.isDarkMode = true;
     } catch {}
+
+    // Try to auto-load tickets for the logged-in user's company from session
+    try {
+      const sess = this.loginService.getSession();
+      if (sess) {
+        const companyId = sess.Company_ID ?? sess.Emp_ID ?? null;
+        const companyEmail = sess.Email_Id ?? null;
+        if (companyId && companyEmail) {
+          this.ticketCompanyId = String(companyId);
+          this.ticketCompanyEmail = String(companyEmail);
+          this.loadTickets(companyId, companyEmail);
+        }
+      }
+    } catch (e) {
+      // ignore session read errors
+      console.error('Failed to read session for tickets', e);
+    }
   }
 
   /**
@@ -97,6 +129,7 @@ export class UserManagementComponent implements OnInit {
 
   private mapApiTicket(api: any): Ticket {
     // API example fields (PascalCase): Ticket_No, Ticket_Category, Ticket_Details, Ticket_Creation_Date, Ticket_Closing_Date, Ticket_Priority, Ticket_Status, Ticket_Day_Open
+    const Uniqueid = api?.Uniqueid ?? '';
     const ticket_no = api?.Ticket_No ?? api?.TicketNo ?? api?.ticket_no ?? '';
     const ticket_category = api?.Ticket_Category ?? api?.TicketCategory ?? api?.ticket_category ?? '';
     const ticket_details = api?.Ticket_Details ?? api?.TicketDetails ?? api?.ticket_details ?? '';
@@ -109,6 +142,7 @@ export class UserManagementComponent implements OnInit {
     const ticket_day_open = ticket_day_open_raw != null ? Number(ticket_day_open_raw) : undefined;
 
     return {
+      Uniqueid,
       ticket_no,
       ticket_category,
       ticket_details,
@@ -117,7 +151,7 @@ export class UserManagementComponent implements OnInit {
       ticket_priority,
       ticket_status,
       ticket_day_open
-    } as Ticket;
+    } as unknown as Ticket;
   }
 
   applyFilters() {
@@ -140,6 +174,10 @@ export class UserManagementComponent implements OnInit {
 
   // ====== Ticket state ======
   tickets: Ticket[] = [];
+  // comments keyed by ticket_no
+  commentsMap: { [ticketNo: string]: Comment[] } = {};
+  // new comment input for modal
+  currentCommentText: string = '';
 
   // Inputs for backend query (company id/email)
   ticketCompanyId: string = '';
@@ -150,7 +188,7 @@ export class UserManagementComponent implements OnInit {
 
   showTicketModal: boolean = false;
   ticketEditMode: boolean = false;
-  currentTicket: Ticket = { ticket_no: 0, ticket_category: '', ticket_details: '', ticket_creation_date: new Date().toISOString(), ticket_closing_date: null, ticket_priority: 'Low', ticket_status: 'Open' };
+  currentTicket: Ticket = { Uniqueid: 0, ticket_no: 0, ticket_category: '', ticket_details: '', ticket_creation_date: new Date().toISOString(), ticket_closing_date: null, ticket_priority: 'Low', ticket_status: 'Open' };
 
   // ====== SIDEBAR / THEME METHODS ======
   toggleCollapse() {
@@ -230,11 +268,154 @@ export class UserManagementComponent implements OnInit {
     if (ticket) {
       this.ticketEditMode = true;
       this.currentTicket = { ...ticket };
+      // load existing comments for this ticket
+      try {
+        this.loadComments(this.currentTicket.ticket_no);
+      } catch (e) {}
     } else {
       this.ticketEditMode = false;
-      this.currentTicket = { ticket_no: this.getNextTicketNo(), ticket_category: '', ticket_details: '', ticket_creation_date: new Date().toISOString(), ticket_closing_date: null, ticket_priority: 'Low', ticket_status: 'Open' };
+      this.currentTicket = { Uniqueid: 0, ticket_no: this.getNextTicketNo(), ticket_category: '', ticket_details: '', ticket_creation_date: new Date().toISOString(), ticket_closing_date: null, ticket_priority: 'Low', ticket_status: 'Open' };
     }
     this.showTicketModal = true;
+  }
+
+  /** Load comments for the given ticket and store in commentsMap */
+  loadComments(ticketNo: string | number) {
+    const key = String(ticketNo);
+    // clear existing while loading
+    this.commentsMap[key] = this.commentsMap[key] || [];
+    // try to use session or current query inputs to include company info
+    const sess = (this.loginService as any)?.getSession?.();
+    const companyId = sess?.Company_ID ?? sess?.Emp_ID ?? this.ticketCompanyId ?? null;
+    const companyEmail = sess?.Email_Id ?? this.ticketCompanyEmail ?? null;
+
+    this.userManagementService.getCommentsByTicket(ticketNo, companyId, companyEmail).subscribe({
+      next: (res: any) => {
+        // Normalize multiple possible response shapes:
+        // - Array of comment objects
+        // - { data: [...] }
+        // - { Comments: 'c1,c2', Ticket_No: 'T..', added: [...] }
+        let rawItems: any[] = [];
+        if (Array.isArray(res)) {
+          rawItems = res;
+        } else if (res && Array.isArray(res.data)) {
+          rawItems = res.data;
+        } else if (res && typeof res.Comments === 'string') {
+          // comma-separated string
+          const parsed = String(res.Comments).split(',').map((s: string) => s.trim()).filter(Boolean);
+          rawItems = parsed.map((txt: string) => ({ Comment_Text: txt }));
+          if (Array.isArray(res.added)) {
+            rawItems = rawItems.concat(res.added.map((t: any) => ({ Comment_Text: String(t) })));
+          }
+        } else if (res && typeof res === 'object' && Object.keys(res).length) {
+          // single object fallback
+          rawItems = [res];
+        }
+
+        this.commentsMap[key] = rawItems.map((c: any) => {
+          if (typeof c === 'string') {
+            return {
+              comment_id: undefined,
+              ticket_no: ticketNo,
+              comment_text: c,
+              author: '',
+              created_at: null
+            } as unknown as Comment;
+          }
+
+          const text = c?.Comment_Text ?? c?.comment ?? c?.comment_text ?? c?.text ?? c;
+          return {
+            comment_id: c?.Comment_ID ?? c?.comment_id ?? c?.id,
+            ticket_no: c?.Ticket_No ?? c?.ticket_no ?? ticketNo,
+            comment_text: text ?? '',
+            author: c?.Author ?? c?.author ?? c?.CreatedBy ?? '',
+            created_at: c?.Created_At ?? c?.created_at ?? c?.createdAt ?? null
+          } as Comment;
+        });
+      },
+      error: (err: any) => {
+        console.error('Failed to load comments', err);
+      }
+    });
+  }
+
+  /** Add a comment to the current ticket via API and update UI */
+  addComment() {
+    if (!this.currentCommentText || !this.currentTicket) return;
+    const ticketNo = this.currentTicket.ticket_no;
+    const uniqueId = this.currentTicket?.Uniqueid;
+    const sess = (this.loginService as any)?.getSession?.();
+    const companyId = sess?.Company_ID ?? sess?.Emp_ID ?? this.ticketCompanyId ?? null;
+    const companyEmail = sess?.Email_Id ?? this.ticketCompanyEmail ?? null;
+
+    // Build payload using accepted parameter names per backend contract
+    const payload: any = {
+      Company_ID: companyId,
+      Company_Email: companyEmail,
+      Uniqueid: uniqueId,
+      Ticket_No: ticketNo,
+      comment: this.currentCommentText,
+    };
+
+    this.userManagementService.addComment(payload).subscribe({
+      next: (res: any) => {
+        const key = String(ticketNo);
+        this.commentsMap[key] = this.commentsMap[key] || [];
+
+        // Handle shapes: { added: [...] }, { Comments: 'a,b' }, or returned objects/data
+        if (res && Array.isArray(res.added)) {
+          for (const txt of res.added) {
+            this.commentsMap[key].push({
+              comment_id: undefined,
+              ticket_no: ticketNo,
+              comment_text: String(txt),
+              author: sess ? (sess.Emp_Name ?? sess.Email_Id ?? sess.Emp_ID) : undefined,
+              created_at: new Date().toISOString()
+            });
+          }
+        } else if (res && typeof res.Comments === 'string') {
+          const parsed = String(res.Comments).split(',').map((s: string) => s.trim()).filter(Boolean);
+          for (const txt of parsed) {
+            this.commentsMap[key].push({
+              comment_id: undefined,
+              ticket_no: ticketNo,
+              comment_text: String(txt),
+              author: sess ? (sess.Emp_Name ?? sess.Email_Id ?? sess.Emp_ID) : undefined,
+              created_at: new Date().toISOString()
+            });
+          }
+        } else {
+          const added = (res && (res.data || res)) ? (Array.isArray(res.data) ? res.data : res) : payload;
+          if (Array.isArray(added)) {
+            for (const a of added) {
+              const text = a?.Comment_Text ?? a?.comment ?? a?.comment_text ?? a?.text ?? a;
+              this.commentsMap[key].push({
+                comment_id: a?.Comment_ID ?? a?.comment_id ?? a?.id,
+                ticket_no: ticketNo,
+                comment_text: String(text),
+                author: a?.Author ?? a?.author ?? sess ? (sess.Emp_Name ?? sess.Email_Id ?? sess.Emp_ID) : undefined,
+                created_at: a?.Created_At ?? a?.created_at ?? a?.createdAt ?? new Date().toISOString()
+              });
+            }
+          } else {
+            const a = added;
+            const text = a?.Comment_Text ?? a?.comment ?? a?.comment_text ?? a?.text ?? this.currentCommentText;
+            this.commentsMap[key].push({
+              comment_id: a?.Comment_ID ?? a?.comment_id ?? a?.id,
+              ticket_no: ticketNo,
+              comment_text: String(text),
+              author: a?.Author ?? a?.author ?? sess ? (sess.Emp_Name ?? sess.Email_Id ?? sess.Emp_ID) : undefined,
+              created_at: a?.Created_At ?? a?.created_at ?? a?.createdAt ?? new Date().toISOString()
+            });
+          }
+        }
+        this.currentCommentText = '';
+      },
+      error: (err: any) => {
+        console.error('Failed to add comment', err);
+        // Optionally show an error toast
+      }
+    });
   }
 
   saveTicket() {
@@ -276,7 +457,7 @@ export class UserManagementComponent implements OnInit {
   filteredTickets() {
     let result = this.tickets;
     if (this.searchText) {
-      const t = this.searchText.toLowerCase();
+      const t = this.searchText;
       result = result.filter(ticket =>
         (ticket.ticket_no?.toString() || '').includes(t) ||
         (ticket.ticket_category || '').toLowerCase().includes(t) ||

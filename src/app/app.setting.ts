@@ -21,6 +21,9 @@ export const AppSettings = {
     getEmployees: `${environment.apiUrl}/getemployees`, // list employees (GET)
   // Tickets
   tickets: `${environment.apiUrl}/tickets`, // list tickets (GET) - expects query params
+    // Comments
+    addcomments: `${environment.apiUrl}/comments`, // comments endpoint (GET/POST)
+    getcomments: `${environment.apiUrl}/get-comments`, // comments endpoint (GET/POST)
 
     // Auth (placeholders - implement on backend if available)
     login: `${environment.apiUrl}/auth/login`,
