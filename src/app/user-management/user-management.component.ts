@@ -349,12 +349,19 @@ export class UserManagementComponent implements OnInit {
     const companyEmail = sess?.Email_Id ?? this.ticketCompanyEmail ?? null;
 
     // Build payload using accepted parameter names per backend contract
+    const now = new Date();
+    const pad = (n: number) => n.toString().padStart(2, '0');
+    const hours = now.getHours();
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    const hours12 = hours % 12 || 12;
+    const createdAt = `${pad(now.getDate())}/${pad(now.getMonth() + 1)}/${now.getFullYear()} ${pad(hours12)}:${pad(now.getMinutes())}:${pad(now.getSeconds())} ${ampm}`;
+
     const payload: any = {
       Company_ID: companyId,
       Company_Email: companyEmail,
       Uniqueid: uniqueId,
       Ticket_No: ticketNo,
-      comment: this.currentCommentText,
+      comment: createdAt+' => '+this.currentCommentText,
     };
 
     this.userManagementService.addComment(payload).subscribe({
