@@ -5,6 +5,7 @@ import { NgChartsModule } from 'ng2-charts';
 import { RouterModule, Router } from '@angular/router';
 import { DashboardService, ChartData, ChartResponse } from './dashboard.service';
 import { AuthService } from '../auth.service';
+import { LoginServiceService } from '../login/login-service.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -36,18 +37,21 @@ export class DashboardComponent implements OnInit {
   selectedCompany: string = '';
 
   showAdvancedFilters: boolean = false;
+  sess: any = null;
 
   constructor(
     private dashboardService: DashboardService,
     private router: Router,
-    private cdRef: ChangeDetectorRef
-    , public auth: AuthService
+    private cdRef: ChangeDetectorRef, 
+    public auth: AuthService,
+    private loginService: LoginServiceService
   ) {}
 
 
   ngOnInit(): void {
     this.loadFilters();
     this.applyFilters();
+    this.sess = this.loginService.getSession();
   }
 
   loadFilters() {

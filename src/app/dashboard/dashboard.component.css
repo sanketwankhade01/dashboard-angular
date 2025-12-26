@@ -715,5 +715,11 @@
 
 
 
-
+.emp-name {
+  font-size: 14px;
+  color: #212121;
+  font-weight: 500;
+  font-style: italic;
+  margin-left: 45px;
+}
 
